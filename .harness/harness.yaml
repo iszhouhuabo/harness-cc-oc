@@ -1,0 +1,97 @@
+version: 3.1.4
+name: harness-engineering
+
+runtime:
+  required:
+    - path: runtime.md
+    - path: harness.yaml
+  loading_policy: progressive
+
+platforms:
+  opencode:
+    adapter: adapters/opencode_pm.js
+    pm_bash: deny
+    pm_edit: deny
+    pm_tools: [harness_change, harness_git_read, harness_pm_write]
+    worker_task: deny
+    task_role_guard: plugin
+
+workflow:
+  contract:
+    path: workflow/contract.json
+  board:
+    path: ../harness/board.md
+
+commands:
+  harness-propose:
+    path: commands/harness-propose.md
+    lazy_load:
+      - subagents/business-analyst.md
+      - subagents/solution-architect.md
+      - subagents/readiness-reviewer.md
+      - templates/change/proposal.md
+      - templates/change/requirements.md
+      - templates/change/design.md
+      - templates/change/tasks.md
+      - templates/change/readiness-review.md
+      - templates/change/impact-analysis.md
+      - rules/reporting.md
+  harness-apply:
+    path: commands/harness-apply.md
+    lazy_load:
+      - subagents/developer.md
+      - subagents/code-reviewer.md
+      - subagents/test-engineer.md
+      - templates/change/dev-log.md
+      - templates/change/code-review.md
+      - templates/change/test-report.md
+      - checklists/code-review.md
+      - checklists/test-engineering.md
+      - rules/reporting.md
+      - skills/build-test/SKILL.md
+      - skills/post-verify/SKILL.md
+      - skills/systematic-debug/SKILL.md
+      - skills/code-review/SKILL.md
+      - skills/test-e2e/SKILL.md
+  harness-archive:
+    path: commands/harness-archive.md
+    lazy_load:
+      - ../harness/archive/index.md
+      - ../harness/memory/index.md
+      - ../harness/memory/templates/entry.md
+
+scripts:
+  harness:
+    path: scripts/harness.py
+    owner: PM_or_Developer_or_TE
+  dispatch-subagent:
+    path: scripts/dispatch_subagent.py
+    owner: platform_hook
+    fail_closed: false
+  harness-init:
+    path: scripts/harness_init.py
+    owner: maintainer
+
+subagents:
+  business-analyst: {path: subagents/business-analyst.md}
+  solution-architect: {path: subagents/solution-architect.md}
+  readiness-reviewer: {path: subagents/readiness-reviewer.md}
+  developer: {path: subagents/developer.md}
+  code-reviewer: {path: subagents/code-reviewer.md}
+  test-engineer: {path: subagents/test-engineer.md}
+
+skills:
+  build-test: {path: skills/build-test/SKILL.md}
+  post-verify: {path: skills/post-verify/SKILL.md}
+  systematic-debug: {path: skills/systematic-debug/SKILL.md}
+  code-review: {path: skills/code-review/SKILL.md}
+  test-e2e: {path: skills/test-e2e/SKILL.md}
+  harness-init: {path: skills/harness-init/SKILL.md}
+
+rules:
+  workflow-discipline: {path: rules/workflow-discipline.md}
+  reporting: {path: rules/reporting.md}
+
+checklists:
+  code-review: {path: checklists/code-review.md}
+  test-engineering: {path: checklists/test-engineering.md}

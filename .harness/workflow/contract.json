@@ -1,0 +1,120 @@
+{
+  "version": 3,
+  "path_namespaces": {
+    "control_plane": ".harness/",
+    "active_task_root": "harness/specs/<task_name>/",
+    "artifact_resolution": "unqualified role artifact names resolve under active_task_root; never under .harness/"
+  },
+  "profiles": {
+    "quick": ["requirements", "design", "development", "review", "testing"],
+    "standard": ["requirements", "design", "readiness", "development", "review", "testing"],
+    "refactor": ["impact-analysis", "requirements", "design", "readiness", "development", "review", "testing"]
+  },
+  "documents": {
+    "proposal.md": {
+      "owner": "business-analyst",
+      "schema": "proposal@3",
+      "required_sections": ["Goal", "Scope", "Baseline", "Spec Delta", "Decisions", "Assumptions", "Open Questions", "Acceptance Summary", "Conclusion"]
+    },
+    "requirements.md": {
+      "owner": "business-analyst",
+      "schema": "requirements@3",
+      "required_sections": ["Actors", "Requirement Delta", "Requirements", "Non-Goals", "Constraints", "Blocking Questions", "Conclusion"]
+    },
+    "impact-analysis.md": {
+      "owner": "solution-architect",
+      "schema": "impact-analysis@3",
+      "required_sections": ["Scope", "Baseline", "Impact Matrix", "Affected Specs", "Affected Code Areas", "Compatibility And Migration", "Split Recommendation", "Risks", "Conclusion"]
+    },
+    "design.md": {
+      "owner": "solution-architect",
+      "schema": "design@3",
+      "required_sections": ["Inputs And Constraints", "Design Delta", "Requirement Mapping", "Architecture", "Interfaces And Data", "Decisions", "Impact", "Task Plan", "Test Ownership", "Verification Contract", "Compatibility Migration And Rollback", "Risks", "Unresolved Branches", "Readiness Self-Check", "Conclusion"]
+    },
+    "tasks.md": {
+      "owner": "solution-architect",
+      "schema": "tasks@3",
+      "required_sections": ["Task Delta", "Checklist Ownership", "Requirement Traceability", "Implementation", "Review", "Verification", "Documentation And Closeout", "Conclusion"]
+    },
+    "readiness-review.md": {
+      "owner": "readiness-reviewer",
+      "schema": "readiness-review@3",
+      "required_sections": ["Reviewed Inputs", "Checklist Results", "Traceability Review", "Findings", "Ownership And Return Route", "Reusable Experience Draft", "Conclusion"]
+    },
+    "dev-log.md": {
+      "owner": "developer",
+      "schema": "dev-log@5",
+      "required_sections": ["Baseline And Scope", "Implementation Records", "Changed Files", "Verification Inputs", "Task Checklist Updates", "Verification Plan", "Verification Results", "Post-change Review", "Open Items", "Reusable Experience Draft", "Conclusion"]
+    },
+    "code-review.md": {
+      "owner": "code-reviewer",
+      "schema": "code-review@3",
+      "required_sections": ["Inputs", "Reviewed Diff", "Checklist Results", "Findings", "Evidence Review", "Ownership And Return Route", "Reusable Experience Draft", "Conclusion"]
+    },
+    "test-report.md": {
+      "owner": "test-engineer",
+      "schema": "test-report@5",
+      "required_sections": ["Inputs", "Environment And Evidence", "Verification Inputs", "Checklist Results", "Test Matrix", "Requirement Coverage", "Regression And Baseline", "Persisted Test Assets", "Failures", "Reusable Experience Draft", "Conclusion"]
+    }
+  },
+  "stages": {
+    "requirements": {"role": "business-analyst", "documents": ["requirements.md"]},
+    "impact-analysis": {"role": "solution-architect", "documents": ["impact-analysis.md"]},
+    "design": {"role": "solution-architect", "documents": ["design.md", "tasks.md"]},
+    "readiness": {"role": "readiness-reviewer", "documents": ["readiness-review.md"]},
+    "development": {"role": "developer", "documents": ["dev-log.md"]},
+    "review": {"role": "code-reviewer", "documents": ["code-review.md"]},
+    "testing": {"role": "test-engineer", "documents": ["test-report.md"]}
+  },
+  "roles": {
+    "business-analyst": {
+      "inputs": ["user_request", "proposal.md", "relevant_specs", "impact-analysis.md@refactor"],
+      "outputs": ["proposal.md", "requirements.md"],
+      "allowed_writes": ["proposal.md", "requirements.md"],
+      "conclusions": ["PASS", "BLOCK"],
+      "completion_checks": ["spec_delta_complete", "shall_requirements", "gwt_scenarios", "non_goals", "blocking_questions_resolved"]
+    },
+    "solution-architect": {
+      "inputs": ["proposal.md", "baseline.json@impact_analysis", "requirements.md@design", "relevant_code", "architecture_rules", "impact-analysis.md@design_refactor"],
+      "outputs": ["impact-analysis.md@impact_analysis", "design.md@design", "tasks.md@design"],
+      "allowed_writes": ["impact-analysis.md", "design.md", "tasks.md"],
+      "conclusions": ["PASS", "BLOCK"],
+      "completion_checks": ["requirement_mapping", "task_traceability", "test_ownership", "executable_verification_contract", "delta_reconciliation"]
+    },
+    "readiness-reviewer": {
+      "inputs": ["proposal.md", "requirements.md", "design.md", "tasks.md", "impact-analysis.md@refactor", "relevant_specs"],
+      "outputs": ["readiness-review.md"],
+      "allowed_writes": ["readiness-review.md"],
+      "conclusions": ["PASS", "BLOCK"],
+      "completion_checks": ["input_format", "traceability", "requirements_purity", "design_completeness", "task_executability", "finding_ownership"]
+    },
+    "developer": {
+      "inputs": ["proposal.md", "requirements.md", "design.md", "tasks.md", "readiness-review.md_or_quick_self_check", "baseline.json", "relevant_memory"],
+      "outputs": ["business_changes", "test_changes", "dev-log.md", "dev_checklist_updates"],
+      "allowed_writes": ["business_code", "test_code", "dev-log.md", "tasks.md:dev_owned_status"],
+      "conclusions": ["PASS", "BLOCK"],
+      "completion_checks": ["scope_match", "task_evidence", "runtime_version", "verification_commands", "post_change_review", "open_items_routed"]
+    },
+    "code-reviewer": {
+      "inputs": ["requirements.md", "design.md", "tasks.md", "readiness-review.md_or_quick_self_check", "dev-log.md", "git_diff", "code-review_checklist"],
+      "outputs": ["code-review.md", "cr_checklist_updates"],
+      "allowed_writes": ["code-review.md", "tasks.md:cr_owned_status"],
+      "conclusions": ["PASS", "REJECT"],
+      "completion_checks": ["all_checklist_rows", "diff_scope", "requirement_coverage", "evidence_credibility", "finding_ownership"]
+    },
+    "test-engineer": {
+      "inputs": ["requirements.md", "design.md", "tasks.md", "dev-log.md", "code-review.md", "baseline.json", "git_diff", "test-engineering_checklist"],
+      "outputs": ["test-report.md", "test_assets", "te_checklist_updates"],
+      "allowed_writes": ["test-report.md", "test_assets", "tasks.md:te_owned_status"],
+      "conclusions": ["PASS", "FAIL", "BLOCK"],
+      "completion_checks": ["all_checklist_rows", "scenario_coverage", "runtime_version", "regression_scope", "evidence_credibility", "failure_ownership"]
+    }
+  },
+  "return_packet": {
+    "required_fields": ["role", "task_name", "artifacts_updated", "conclusion", "summary", "evidence", "issues", "next_owner"]
+  },
+  "checklists": {
+    "code-review.md": ["CHK-CR-001", "CHK-CR-002", "CHK-CR-003", "CHK-CR-004", "CHK-CR-005", "CHK-CR-006", "CHK-CR-007", "CHK-CR-008"],
+    "test-report.md": ["CHK-TE-001", "CHK-TE-002", "CHK-TE-003", "CHK-TE-004", "CHK-TE-005", "CHK-TE-006", "CHK-TE-007", "CHK-TE-008"]
+  }
+}
